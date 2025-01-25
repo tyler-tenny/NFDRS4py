@@ -2,7 +2,7 @@ cmake_minimum_required (VERSION 3.13)
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
 project (
-	NFDRS4
+	NFDRS4py
 	VERSION 1.0
 	DESCRIPTION "National Fire Danger Rating System 4"
 	LANGUAGES CXX)
@@ -20,10 +20,7 @@ endif()
 
 add_subdirectory(lib)
 
-add_subdirectory(app)
-
 #install locations for apps, headers, and libs
-set(app_dest "bin")
 set(include_dest "include")
 set(lib_dest "lib")
 
