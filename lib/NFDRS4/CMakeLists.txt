@@ -17,6 +17,7 @@ set(INTERNAL_HEADERS
 	${HEADER_DIR}/livefuelmoisture.h
 	${HEADER_DIR}/nfdrs4calcstate.h
 	${HEADER_DIR}/nfdrs4statesizes.h
+		${HEADER_DIR}/CNFDRSParams.h
 )
 
 set(HEADERS 
@@ -32,6 +33,7 @@ add_library(${PROJECT_NAME} STATIC
 	src/livefuelmoisture.cpp
 	src/nfdrs4.cpp
 	src/nfdrs4calcstate.cpp
+		src/CNFDRSParams.cpp
 )
 
 target_include_directories(${PROJECT_NAME}   PUBLIC

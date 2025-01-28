@@ -5,11 +5,7 @@ This directory contains an interface file ```nfdrs.i``` for generating SWIG bind
 Swig ver 4 or newer is needed. To generate the bindings and compile the module for Python, execute the following from within this directory in the NFDRS source tree:
 ```/bin/bash
 swig -python -py3 -c++ nfdrs4.i
-g++ -fPIC -I ~/anaconda3/include/python3.12/ -I ../lib/NFDRS4/include/
-      -I ../lib/time64/include/ -I ../lib/utctime/include/
-      -c ../lib/NFDRS4/src/deadfuelmoisture.cpp  ../lib/NFDRS4/src/livefuelmoisture.cpp ../lib/NFDRS4/src/dfmcalcstate.cpp
-      ../lib/NFDRS4/src/lfmcalcstate.cpp       ../lib/NFDRS4/src/nfdrs4calcstate.cpp       ../lib/NFDRS4/src/nfdrs4.cpp
-      ../lib/utctime/src/utctime.cpp ../app/NFDRS4_cli/src/CNFDRSParams.cpp      ../lib/time64/src/time64.c nfdrs4_wrap.cxx
+g++ -fPIC -I C:/Users/john1/miniforge3/include/ -I lib/NFDRS4/include/ -I lib/time64/include/ -I lib/utctime/include/ -c lib/NFDRS4/src/deadfuelmoisture.cpp  lib/NFDRS4/src/livefuelmoisture.cpp lib/NFDRS4/src/dfmcalcstate.cpp lib/NFDRS4/src/lfmcalcstate.cpp lib/NFDRS4/src/nfdrs4calcstate.cpp lib/NFDRS4/src/nfdrs4.cpp lib/utctime/src/utctime.cpp lib/time64/src/time64.c nfdrs4_wrap.cxx
 g++ -shared *.o -o _nfdrs4.so -lgomp
 ```
 

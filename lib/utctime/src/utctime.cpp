@@ -917,7 +917,7 @@ TM* utctime::tm_decrement_second(TM* changing_tm,
  * \throws      bad_time if the current time cannot be obtained.
  */
 
-time_t utctime::get_utc_timestamp(const int year, const int month,
+Time64_T utctime::get_utc_timestamp(const int year, const int month,
                                   const int day, const int hour,
                                   const int minute, const int second) {
 
