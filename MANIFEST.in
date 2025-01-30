@@ -1,0 +1,2 @@
+recursive-include lib *.h *.cpp
+include nfdrs4py *.py *.i *.cpp

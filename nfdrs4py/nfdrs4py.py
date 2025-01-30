@@ -1,3 +1,4 @@
+import os
 from typing import Union
 
 import numpy as np
@@ -38,7 +39,16 @@ class NFDRS4py():
         self.nfdrs4.Init(Lat=Lat,FuelModel=FuelModel,SlopeClass=SlopeClass,AvgAnnPrecip=AvgAnnPrecip,LT=LT, Cure=Cure,
                          isAnnual=isAnnual,kbdiThreshold=kbdiThreshold,RegObsHour=RegObsHour,isReinit=isReinit)
 
-    def set_from_config(self,config:dict):
+    def set_from_config(self,config:Union[dict[dict],str]):
+        """Set NFDRS4py variables from configuration file or dictionary.
+
+        First level keys must be 'general', 'liveFuelMoisture.defaults', 'gsi_opts', 'herb_opts', 'woody_opts',
+        'deadFuelMoisture.defaults', '1hr_opts', '10hr_opts', '100hr_opts', '1000hr_opts', and/or 'customFuelModel'
+        Second level keys must match variable names in associated nfdrs4py setter
+        """
+        if type(config) is not dict:
+            config = read_config(config)
+
         self.nfdrs4.Init(config['general']['latitude'],config['general']['fuelmodel'],config['general']['slopeclass'],
                          config['general']['avgannualprecip'],bool(config['general']['useloadtransfer']),
                          bool(config['general']['usecure']),bool(config['general']['isannuals']),
@@ -174,7 +184,7 @@ class NFDRS4py():
         self.nfdrs4.Update(int(Year),int(Month),int(Day),int(Hour),float(Temp),float(RH),float(PPTAmt),
                            float(SolarRad),float(WS),bool(SnowDay))
 
-    def get_current_fuel_moisture(self):
+    def get_current_fuel_moisture(self)->dict[float]:
         d = {'dmc_1_hr':self.nfdrs4.MC1,
              'dmc_10_hr':self.nfdrs4.MC10,
              'dmc_100_hr':self.nfdrs4.MC100,
@@ -183,7 +193,7 @@ class NFDRS4py():
              'lmc_woody':self.nfdrs4.MCWOOD}
         return d
 
-    def get_current_indices(self):
+    def get_current_indices(self)->dict[float]:
         d = {'burning_index':self.nfdrs4.BI,
              'energy_release_component':self.nfdrs4.ERC,
              'spread_component':self.nfdrs4.SC,
@@ -202,28 +212,31 @@ class NFDRS4py():
                    windspeed_col:Union[int,str]=5,
                    snowflag_col:Union[int,str]=9)->'pd.DataFrame':
 
-        """Process a dataframe or array containing weather data"""
+        """Process a dataframe or array containing weather data.
+
+        Specify column name or position for each required weather variable.
+        Required units are generally US customary units, see NFDRS4 docs"""
 
         import pandas as pd
         import numpy as np
 
         try:
-            dt_series = pd.to_datetime(df[:,datetime_col])
+            dt_series = pd.to_datetime(df.iloc[:, datetime_col])
         except:
-            dt_series = pd.to_datetime(df.iloc[:,datetime_col])
+            dt_series = pd.to_datetime(df[datetime_col])
 
         try:
-            wx = df[:,[temp_col,rh_col,precip_col,srad_col,windspeed_col,snowflag_col]]
-        except:
             wx = df.iloc[:, [temp_col, rh_col, precip_col, srad_col, windspeed_col, snowflag_col]]
+        except:
+            wx = df[[temp_col, rh_col, precip_col, srad_col, windspeed_col, snowflag_col]]
 
         try:
-            wx_arr = wx.to_numpy()
+            try:
+                wx_arr = wx.to_numpy()
+            except:
+                wx_arr = wx.to_array()
         except:
             wx_arr = np.array(wx)
-
-        if not ((wx_arr.shape[0]==df.shape[0]) and (wx_arr.shape[1]==6)):
-            raise TypeError("Could not cast input table to numpy array. Try casting to pandas.DataFrame first.")
 
         dt_arr = np.stack([
             dt_series.dt.year,
@@ -231,6 +244,12 @@ class NFDRS4py():
             dt_series.dt.day,
             dt_series.dt.hour,
         ]).T
+
+        if not ((wx_arr.shape[0]==df.shape[0]) and (wx_arr.shape[1]==6) and
+                (dt_arr.shape[0]==df.shape[0]) and (dt_arr.shape[1]==4)):
+            raise TypeError("Could not cast input table to numpy arrays. Try casting to pandas.DataFrame first.")
+
+
 
         results_cols = ['dmc_1_hr', 'dmc_10_hr', 'dmc_100_hr', 'dmc_1000_hr', 'lmc_herb', 'lmc_woody',
                         'burning_index', 'energy_release_component', 'spread_component', 'ignition_component',
@@ -252,15 +271,23 @@ class NFDRS4py():
         return pd.concat([df,results],axis=1)
 
     @classmethod
-    def init_from_config(cls, config: dict):
+    def init_from_config(cls, config: Union[dict[dict],str]):
+        """Initialize NFDRS4py interface from configuration file or dictionary.
+
+        First level keys must be 'general', 'liveFuelMoisture.defaults', 'gsi_opts', 'herb_opts', 'woody_opts',
+        'deadFuelMoisture.defaults', '1hr_opts', '10hr_opts', '100hr_opts', '1000hr_opts', and/or 'customFuelModel'
+        Second level keys must match variable names in associated nfdrs4py setter"""
+
         interface = cls()
         interface.set_from_config(config)
         return interface
 
-def read_config(fp)->dict:
+def read_config(fp)->dict[dict]:
     """Read config file to dictionary. Must be formatted as nfdrs4 config or as .ini.
 
-    If format is .ini, sections must be 'general', """
+    Option names must match variable names of associated variables used in nfdrs4py setters. If format is .ini, sections
+    must be 'general', 'liveFuelMoisture.defaults', 'gsi_opts', 'herb_opts', 'woody_opts', 'deadFuelMoisture.defaults',
+    '1hr_opts', '10hr_opts', '100hr_opts', '1000hr_opts', and/or 'customFuelModel'"""
 
     import configparser
     import ast

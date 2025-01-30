@@ -1,22 +1,3 @@
-
-# nfdrs4py - Simple Python Interface for the National Fire Danger Rating System 4.0
-
-Calculate fuel moisture and fire danger indices using this python interface to the NFDRS4 C++ library.
-
-This library offers a simple interface to NFDRS4 and easier installation for Python users. Compilation was tested with
-[Microsoft Visual Studio 2022 with C++ developer workload](https://learn.microsoft.com/en-us/visualstudio/install/install-visual-studio?view=vs-2022). 
-Create a github issue if you have problems with installation or otherwise.
-
-Core code forked from https://github.com/firelab/NFDRS4
-
-## Installation
-Ensure that you have a C++ compiler installed and configured, then run
-
-`pip install nfdrs4py`
-
-Or clone this repository, cd to the project root, then run `pip install .`
-
-# Example
 ```python
 import nfdrs4py
 import pandas as pd
