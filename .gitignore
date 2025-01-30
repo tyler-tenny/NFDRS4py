@@ -401,3 +401,8 @@ CMakeSettings.json
 /NFDRS4py.egg-info
 nfdrs4py.cp311-win_amd64.pyd
 /nfdrs4.egg-info
+/nfdrs4py/nfdrs4py.egg-info
+/nfdrs4py/nfdrs4py.egg-info
+/nfdrs4py/nfdrs4py.egg-info
+*.pyd
+/data

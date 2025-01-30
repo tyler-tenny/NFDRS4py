@@ -1,11 +1,6 @@
-from .nfdrs4_bindings import NFDRS4, DeadFuelMoisture, LiveFuelMoisture, CNFDRSParams, CDeadFuelMoistureParams, CGSIParams, CFuelModelParams
+from .nfdrs4py import NFDRS4py, read_config
 
 __all__ = [
-    "NFDRS4",
-    "DeadFuelMoisture",
-    "LiveFuelMoisture",
-    "CNFDRSParams",
-    "CDeadFuelMoistureParams",
-    "CGSIParams",
-    "CFuelModelParams",
+    "NFDRS4py",
+    "read_config"
 ]

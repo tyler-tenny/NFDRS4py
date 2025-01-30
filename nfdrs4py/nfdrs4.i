@@ -15,6 +15,7 @@
 %include "std_vector.i"
 %include "std_string.i"
 
+
 #ifdef SWIGPYTHON
 typedef float FP_STORAGE_TYPE;
 typedef long time_t;
