@@ -24,12 +24,13 @@ class BuildPy(build_py):
 
 setup(
     name='nfdrs4py',
-    version='0.1',
+    version='0.1.1',
     description='Python interface to NFDRS',
+    url='https://github.com/j-tenny/NFDRS4py',
     ext_modules=[swig_extension],
     cmdclass={
         'build_py': BuildPy,
     },
-    packages=find_packages('nfdrs4py'),
-    package_dir={'': 'nfdrs4py'}
+    packages=find_packages(),
+    #package_dir={'': 'nfdrs4py'}
 )

@@ -9,6 +9,8 @@ Create a github issue if you have problems with installation or otherwise.
 
 Core code forked from https://github.com/firelab/NFDRS4
 
+See also: https://github.com/j-tenny/pyrothermel
+
 ## Installation
 Ensure that you have a C++ compiler installed and configured, then run
 

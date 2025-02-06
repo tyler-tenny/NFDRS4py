@@ -406,3 +406,4 @@ nfdrs4py.cp311-win_amd64.pyd
 /nfdrs4py/nfdrs4py.egg-info
 *.pyd
 /data
+/dist
