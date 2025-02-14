@@ -12,6 +12,12 @@ class NFDRS4py():
                  FuelModel:str='W',
                  SlopeClass:int=1,
                  AvgAnnPrecip:float=30.,
+                 MCInit1hr:float=0.2,
+                 MCInit10hr: float = 0.2,
+                 MCInit100hr: float = 0.2,
+                 MCInit1000hr: float = 0.2,
+                 MCInitLWoody: float = .6,
+                 MCInitLHerb: float = .3,
                  LT:bool=True,
                  Cure:bool=True,
                  isAnnual:bool=True,
@@ -26,6 +32,12 @@ class NFDRS4py():
         FuelModel: Fuel model character code (V: Grass, W: Grass-Shrub, X: Brush, Y: Timber, Z: Slash).
         SlopeClass: Slope class (1 = <25%, 2 = 26-40%, 3 = 41 - 55%, 4 = 56 - 75%, 5 = 76%+).
         AvgAnnPrecip: Mean annual precipitation (inches).
+        MCInit1hr: initial moisture content for 1hr dead fuel,
+        MCInit10hr: initial moisture content for 10hr dead fuel
+        MCInit100hr: initial moisture content for 100hr dead fuel
+        MCInit1000hr: initial moisture content for 1000hr dead fuel
+        MCInitLWoody: initial moisture content for live woody fuel
+        MCInitLHerb: initial moisture content for live herbaceous fuel
         LT: Use drought fuel load transfer (boolean).
         Cure: Use herbaceous curing (boolean).
         IsAnnual: Treat herbs as annual (boolean).
@@ -39,7 +51,20 @@ class NFDRS4py():
         self.nfdrs4.Init(Lat=Lat,FuelModel=FuelModel,SlopeClass=SlopeClass,AvgAnnPrecip=AvgAnnPrecip,LT=LT, Cure=Cure,
                          isAnnual=isAnnual,kbdiThreshold=kbdiThreshold,RegObsHour=RegObsHour,isReinit=isReinit)
 
-    def set_from_config(self,config:Union[dict[dict],str]):
+        #self.set_one_hr_params()
+        #self.set_ten_hr_params()
+        #self.set_hundred_hr_params()
+        #self.set_thousand_hr_params()
+        #self.set_gsi_params()
+        #self.set_herb_gsi_params()
+        #self.set_woody_gsi_params()
+        #self.set_start_kbdi()
+        #self.set_sc_max()
+        #self.set_mxd()
+
+        self.set_fuel_moisture(MCInit1hr,MCInit10hr,MCInit100hr,MCInit1000hr,MCInitLWoody,MCInitLHerb)
+
+    def set_from_config(self,config:Union[dict[dict],str])->None:
         """Set NFDRS4py variables from configuration file or dictionary.
 
         First level keys must be 'general', 'liveFuelMoisture.defaults', 'gsi_opts', 'herb_opts', 'woody_opts',
@@ -81,9 +106,28 @@ class NFDRS4py():
         if 'mxd' in config['general'].keys() and config['general']['mxd'] > 0:
             self.set_mxd(config['general']['mxd'])
 
-    def set_custom_fuel_model(self,fuelmodel:str,description:str,sg1,sg10,sg100,sg1000,
-                              sgwood,sgherb,hd,l1,l10,l100,l1000,lwood,lherb,depth,
-                              mxd,scm,ldrought,wndfc):
+    def set_custom_fuel_model(self, fuelmodel:str = 'C',
+                              description:str = 'Custom',
+                              sg1:float = 2000,
+                              sg10:float = 109,
+                              sg100:float = 30,
+                              sg1000:float = 8,
+                              sgwood:float = 1500,
+                              sgherb:float = 2000,
+                              hd:float = 8000,
+                              l1:float = 2.5,
+                              l10:float = 2,
+                              l100:float = 5,
+                              l1000:float = 12,
+                              lwood:float = .5,
+                              lherb:float = .5,
+                              depth:float = 1,
+                              mxd:float = 25,
+                              scm:float = 30,
+                              ldrought:float = 0,
+                              wndfc:float = .4)->None:
+        """Set up and use a custom fuel model for fire danger indices"""
+
         from .nfdrs4_bindings import CFuelModelParams
         params = CFuelModelParams()
         params.setFuelModel(fuelmodel)
@@ -110,20 +154,40 @@ class NFDRS4py():
         self.nfdrs4.AddCustomFuel(params)
         self.nfdrs4.iSetFuelModel(params.getFuelModel())
 
-    def set_one_hr_params(self,radius,adsorptionrate,maxlocalmoisture,stickdensity,desorptionrate):
+    def set_one_hr_params(self, radius:float = .2,
+                          adsorptionrate:float = .462252733,
+                          maxlocalmoisture:float = .35,
+                          stickdensity:float = .4,
+                          desorptionrate:float = .06)->None:
+
         self.nfdrs4.SetOneHourParams(radius,adsorptionrate,maxlocalmoisture,stickdensity,desorptionrate)
 
-    def set_ten_hr_params(self, radius, adsorptionrate, maxlocalmoisture, stickdensity, desorptionrate):
+    def set_ten_hr_params(self, radius:float = .64,
+                          adsorptionrate:float = .079548303,
+                          maxlocalmoisture:float = .35,
+                          stickdensity:float = .4,
+                          desorptionrate:float = .06)->None:
+
         self.nfdrs4.SetTenHourParams(radius, adsorptionrate, maxlocalmoisture, stickdensity, desorptionrate)
 
-    def set_hundred_hr_params(self, radius, adsorptionrate, maxlocalmoisture, stickdensity, desorptionrate):
+    def set_hundred_hr_params(self, radius:float = 2.0,
+                          adsorptionrate:float = .06,
+                          maxlocalmoisture:float = .35,
+                          stickdensity:float = .4,
+                          desorptionrate:float = .06)->None:
+
         self.nfdrs4.SetHundredHourParams(radius, adsorptionrate, maxlocalmoisture, stickdensity, desorptionrate)
 
-    def set_thousand_hr_params(self, radius, adsorptionrate, maxlocalmoisture, stickdensity, desorptionrate):
+    def set_thousand_hr_params(self, radius:float = 3.81,
+                          adsorptionrate:float = .06,
+                          maxlocalmoisture:float = .35,
+                          stickdensity:float = .4,
+                          desorptionrate:float = .06)->None:
+
         self.nfdrs4.SetHundredHourParams(radius, adsorptionrate, maxlocalmoisture, stickdensity, desorptionrate)
 
     def set_gsi_params(
-        self, gsimax: float, gsiherbgreenup: float, gsitminmin: float = -2.0, gsitminmax: float = 5.0,
+        self, gsimax: float = 1, gsiherbgreenup: float = .5, gsitminmin: float = -2.0, gsitminmax: float = 5.0,
         gsivpdmin: float = 900, gsivpdmax: float = 4100, gsidaylenmin: float = 36000, gsidaylenmax: float = 39600,
         gsiaveragingdays: int = 21, gsiusevpdavg: bool = False, gsinumprecipdays: int = 30,
         gsirtprecipmin: float = 0.5, gsirtprecipmax: float = 1.5, gsiusertprecip: bool = False
@@ -135,7 +199,7 @@ class NFDRS4py():
         )
 
     def set_herb_gsi_params(
-        self, gsimax: float, gsiherbgreenup: float, gsitminmin: float = -2.0, gsitminmax: float = 5.0,
+        self, gsimax: float = 1, gsiherbgreenup: float = .5, gsitminmin: float = -2.0, gsitminmax: float = 5.0,
         gsivpdmin: float = 900, gsivpdmax: float = 4100, gsidaylenmin: float = 36000, gsidaylenmax: float = 39600,
         gsiaveragingdays: int = 21, gsiusevpdavg: bool = False, gsinumprecipdays: int = 30,
         gsirtprecipmin: float = 0.5, gsirtprecipmax: float = 1.5, gsiusertprecip: bool = False,
@@ -148,7 +212,7 @@ class NFDRS4py():
         )
 
     def set_woody_gsi_params(
-        self, gsimax: float, gsiherbgreenup: float, gsitminmin: float = -2.0, gsitminmax: float = 5.0,
+        self, gsimax: float = 1, gsiherbgreenup: float = .5, gsitminmin: float = -2.0, gsitminmax: float = 5.0,
         gsivpdmin: float = 900, gsivpdmax: float = 4100, gsidaylenmin: float = 36000, gsidaylenmax: float = 39600,
         gsiaveragingdays: int = 21, gsiusevpdavg: bool = False, gsinumprecipdays: int = 30,
         gsirtprecipmin: float = 0.5, gsirtprecipmax: float = 1.5, gsiusertprecip: bool = False,
@@ -160,14 +224,29 @@ class NFDRS4py():
             gsirtprecipmin, gsirtprecipmax, bool(gsiusertprecip), fuelmoisturemin, fuelmoisturemax
         )
 
-    def set_start_kbdi(self,skbdi):
+    def set_start_kbdi(self,skbdi=100)->None:
+        """Starting drought index"""
         self.nfdrs4.SetStartKBDI(skbdi)
 
-    def set_sc_max(self,maxsc):
+    def set_sc_max(self,maxsc=0)->None:
+        """Max spread component? Any positive value other than zero overrides fuel model default."""
         self.nfdrs4.SetSCMax(maxsc)
 
-    def set_mxd(self,mxd):
+    def set_mxd(self,mxd=0)->None:
+        """Moisture of extinction. Any positive value other than zero overrides fuel model default."""
         self.nfdrs4.SetMXD(mxd)
+
+    def set_fuel_moisture(self,dmc_1hr=.2,dmc_10hr=.2,dmc_100hr=.2,dmc_1000hr=.2,lmc_woody=.6,lmc_herb=.3,fuel_temp_C=-999)->None:
+        """Set fuel moisture directly, typically to set initial conditions"""
+        self.nfdrs4.OneHourFM.setMoisture(dmc_1hr)
+        self.nfdrs4.TenHourFM.setMoisture(dmc_10hr)
+        self.nfdrs4.HundredHourFM.setMoisture(dmc_100hr)
+        self.nfdrs4.ThousandHourFM.setMoisture(dmc_1000hr)
+        self.nfdrs4.MC1 = dmc_1hr
+        self.nfdrs4.MC10 = dmc_10hr
+        self.nfdrs4.MC100 = dmc_100hr
+        self.nfdrs4.MC1000 = dmc_1000hr
+        self.nfdrs4.iSetFuelMoistures(dmc_1hr, dmc_10hr, dmc_100hr, dmc_1000hr, lmc_woody*100, lmc_herb*100, fuel_temp_C)
 
     def update_weather(self,
                Year: int,
@@ -179,7 +258,60 @@ class NFDRS4py():
                PPTAmt: float,
                SolarRad: float,
                WS: float,
-               SnowDay: bool):
+               SnowDay: bool)->None:
+        """Initialize a new timestep by providing new weather data. Units are US customary, time is local.
+
+        Args:
+            Year: year of observation (local time, not utc/zulu)
+            Month: month of observation (local time, not utc/zulu)
+            Day: day of observation (local time, not utc/zulu)
+            Hour: hour of observation (local time, not utc/zulu)
+            Temp: air temperature, degrees F
+            RH: relative humidity, percent, expressed as value between 0 and 100
+            PPTAmt: precipitation in this hour, inches
+            SolarRad: solar radiation, watts per sq meter
+            WS: wind speed, miles per hour
+            SnowDay: boolean flag for snow day (check FW21 documentation)
+        """
+
+        self.nfdrs4.Update(int(Year),int(Month),int(Day),int(Hour),float(Temp),float(RH),float(PPTAmt),
+                           float(SolarRad),float(WS),bool(SnowDay))
+
+    def update_weather_metric(self,
+               Year: int,
+               Month: int,
+               Day: int,
+               Hour: int,
+               Temp: float,
+               RH: float,
+               PPTAmt: float,
+               SolarRad: float,
+               WS_km_hr: float = None,
+               WS_m_s: float = None,
+               SnowDay: bool=False):
+        """Initialize a new timestep by providing new weather data. Units are metric, time is local.
+
+        Args:
+            Year: year of observation (local time, not utc/zulu)
+            Month: month of observation (local time, not utc/zulu)
+            Day: day of observation (local time, not utc/zulu)
+            Hour: hour of observation (local time, not utc/zulu)
+            Temp: air temperature, degrees C
+            RH: relative humidity, percent, expressed as value between 0 and 100
+            PPTAmt: precipitation in this hour, cm
+            SolarRad: solar radiation, watts per sq meter
+            WS_km_hr: wind speed, km per hour. Must be provided if WS_m_s is None.
+            WS_m_s: wind speed, meters per second. Must be provided if WS_km_hr is None.
+            SnowDay: boolean flag for snow day (check FW21 documentation)
+        """
+        Temp = Temp * 1.8 + 32
+        PPTAmt /= 2.54
+        if WS_km_hr is not None:
+            WS = WS_km_hr / 1.609344
+        elif WS_m_s is not None:
+            WS = WS_m_s * 2.2369362921
+        else:
+            raise ValueError("Either WS_km_hr or WS_m_s must be provided.")
 
         self.nfdrs4.Update(int(Year),int(Month),int(Day),int(Hour),float(Temp),float(RH),float(PPTAmt),
                            float(SolarRad),float(WS),bool(SnowDay))
@@ -204,18 +336,29 @@ class NFDRS4py():
 
 
     def process_df(self,df,
-                   datetime_col:Union[int,str]=1,
-                   temp_col:Union[int,str]=2,
-                   rh_col:Union[int,str]=3,
-                   precip_col:Union[int,str]=4,
-                   srad_col:Union[int,str]=10,
-                   windspeed_col:Union[int,str]=5,
-                   snowflag_col:Union[int,str]=9)->'pd.DataFrame':
+                   datetime_col:Union[int,str]="DateTime",
+                   temp_col:Union[int,str]="Temperature(F)",
+                   rh_col:Union[int,str]="RelativeHumidity(%)",
+                   precip_col:Union[int,str]="Precipitation(in)",
+                   srad_col:Union[int,str]="SolarRadiation(W/m2)",
+                   windspeed_col:Union[int,str]="WindSpeed(mph)",
+                   snowflag_col:Union[int,str]="SnowFlag")->'pd.DataFrame':
 
-        """Process a dataframe or array containing weather data.
+        """Process a dataframe or array containing weather data, e.g. in FW21 format.
 
-        Specify column name or position for each required weather variable.
-        Required units are generally US customary units, see NFDRS4 docs"""
+        Specify column name (str) or position (int) for each required weather variable.
+
+        Required columns:
+            Year: year of observation (local time, not utc/zulu)
+            Month: month of observation (local time, not utc/zulu)
+            Day: day of observation (local time, not utc/zulu)
+            Hour: hour of observation (local time, not utc/zulu)
+            Temp: air temperature, degrees F
+            RH: relative humidity, percent, expressed as value between 0 and 100
+            PPTAmt: precipitation in this hour, inches
+            SolarRad: solar radiation, watts per sq meter
+            WS: wind speed, miles per hour
+            SnowDay: boolean flag for snow day (check FW21 documentation)"""
 
         import pandas as pd
         import numpy as np
@@ -261,8 +404,8 @@ class NFDRS4py():
             self.update_weather(dt_arr[i, 0], dt_arr[i, 1], dt_arr[i, 2], dt_arr[i, 3], wx_arr[i, 0], wx_arr[i, 1],
                                 wx_arr[i, 2], wx_arr[i, 3], wx_arr[i, 4], wx_arr[i,5])
 
-            results[i, :] = [self.nfdrs4.MC1, self.nfdrs4.MC10, self.nfdrs4.MC100, self.nfdrs4.MC1000,
-                             self.nfdrs4.MCHERB, self.nfdrs4.MCWOOD,
+            results[i, :] = [self.nfdrs4.MC1/100, self.nfdrs4.MC10/100, self.nfdrs4.MC100/100, self.nfdrs4.MC1000/100,
+                             self.nfdrs4.MCHERB/100, self.nfdrs4.MCWOOD/100,
                              self.nfdrs4.BI, self.nfdrs4.ERC, self.nfdrs4.SC, self.nfdrs4.IC,
                              self.nfdrs4.m_GSI,self.nfdrs4.KBDI]
 
