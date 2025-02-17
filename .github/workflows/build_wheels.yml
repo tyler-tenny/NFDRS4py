@@ -16,7 +16,6 @@ jobs:
       
       - name: Ensure C++11 or greater and g++
         run: |
-          echo "CC=gcc" >> $GITHUB_ENV
           echo "CXX=g++" >> $GITHUB_ENV
           echo "CXXFLAGS=-std=c++11" >> $GITHUB_ENV
 
