@@ -13,15 +13,11 @@ jobs:
     steps:
 
       - uses: actions/checkout@v4
-      
-      - name: Ensure C++11 or greater and g++
-        run: |
-          echo "CXX=g++" >> $GITHUB_ENV
-          echo "CXXFLAGS=-std=c++11" >> $GITHUB_ENV
 
       - name: Build wheels
         uses: pypa/cibuildwheel@v2.22.0
         env:
+          CIBW_ENVIRONMENT: 'CXXFLAGS=-std=c++11'
           CIBW_CONFIG_FILE: NFDRS4py/pyproject.toml
 
       - name: Upload wheels
