@@ -3,51 +3,24 @@ from setuptools.command.build_ext import build_ext
 from setuptools.command.build_py import build_py
 from setuptools import find_packages
 import numpy
-import os
-
-# Function to get the appropriate compile flags based on file extension
-def get_compile_flags(file_name):
-    if file_name.endswith('.c'):
-        return ['-std=c11']  # C files should be compiled with C standard
-    elif file_name.endswith('.cpp'):
-        return ['-std=c++11']  # C++ files should be compiled with C++ standard
-    return []
 
 # Define the SWIG extension
-swig_sources = [
-    'nfdrs4py/nfdrs4.i',
-    'lib/NFDRS4/src/deadfuelmoisture.cpp', 'lib/NFDRS4/src/livefuelmoisture.cpp',
-    'lib/NFDRS4/src/dfmcalcstate.cpp', 'lib/NFDRS4/src/lfmcalcstate.cpp',
-    'lib/NFDRS4/src/nfdrs4calcstate.cpp', 'lib/NFDRS4/src/nfdrs4.cpp',
-    'lib/NFDRS4/src/CNFDRSParams.cpp', 'lib/utctime/src/utctime.cpp',
-    'lib/time64/src/time64.c'  # This is the C file causing the issue
-]
-
-# Apply the appropriate compile flags to each source file
-extra_compile_args = []
-# Loop through all source files and apply compile flags based on file extension
-for source in swig_sources:
-    # Get flags for this file
-    compile_flags = get_compile_flags(source)
-    
-    # Add flags to the global extra_compile_args list
-    extra_compile_args.extend(compile_flags)
-
-# Define the SWIG extension with proper flags
 swig_extension = Extension(
     name='nfdrs4py._nfdrs4_bindings',  # Name of the Python package
-    sources=swig_sources,
-    swig_opts=['-c++'],  # SWIG options to generate C++ bindings
-    language='c++',  # The main extension is in C++
-    include_dirs=['lib/NFDRS4/include', 'lib/time64/include', 'lib/utctime/include', numpy.get_include()],
-    extra_compile_args=extra_compile_args,  # Add our conditional compile args here
+    sources=['nfdrs4py/nfdrs4.i', 'lib/NFDRS4/src/deadfuelmoisture.cpp',  'lib/NFDRS4/src/livefuelmoisture.cpp',
+             'lib/NFDRS4/src/dfmcalcstate.cpp', 'lib/NFDRS4/src/lfmcalcstate.cpp','lib/NFDRS4/src/nfdrs4calcstate.cpp',
+             'lib/NFDRS4/src/nfdrs4.cpp', 'lib/NFDRS4/src/CNFDRSParams.cpp', 'lib/utctime/src/utctime.cpp', 'lib/time64/src/time64.c'],
+    swig_opts=['-c++'],  # SWIG options
+    language='c++',
+    include_dirs=['lib/NFDRS4/include','lib/time64/include','lib/utctime/include',numpy.get_include()],  # C:/Users/john1/miniforge3/include/
+    extra_compile_args=[],  # Additional compiler options
     extra_link_args=[],  # Additional linker options
 )
 
 class BuildPy(build_py):
     def run(self):
         self.run_command('build_ext')
-        super(BuildPy, self).run()
+        super(build_py, self).run()
 
 setup(
     name='nfdrs4py',
@@ -59,4 +32,5 @@ setup(
         'build_py': BuildPy,
     },
     packages=find_packages(),
+    #package_dir={'nfdrs4py': 'nfdrs4py'}
 )
