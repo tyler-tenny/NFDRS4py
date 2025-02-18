@@ -13,7 +13,7 @@ swig_extension = Extension(
     swig_opts=['-c++'],  # SWIG options
     language='c++',
     include_dirs=['lib/NFDRS4/include','lib/time64/include','lib/utctime/include',numpy.get_include()],  # C:/Users/john1/miniforge3/include/
-    extra_compile_args=[-std=c++11],  # Additional compiler options
+    extra_compile_args=[-std=gnu++11],  # Additional compiler options
     extra_link_args=[],  # Additional linker options
 )
 
