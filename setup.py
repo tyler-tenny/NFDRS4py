@@ -3,41 +3,46 @@ from setuptools.command.build_ext import build_ext
 from setuptools.command.build_py import build_py
 from setuptools import find_packages
 import numpy
+import os
 
-# Split c and c++ files
-c_sources = ['lib/time64/src/time64.c']
-cpp_sources = ['nfdrs4py/nfdrs4.i', 'lib/NFDRS4/src/deadfuelmoisture.cpp',  'lib/NFDRS4/src/livefuelmoisture.cpp',
-             'lib/NFDRS4/src/dfmcalcstate.cpp', 'lib/NFDRS4/src/lfmcalcstate.cpp','lib/NFDRS4/src/nfdrs4calcstate.cpp',
-             'lib/NFDRS4/src/nfdrs4.cpp', 'lib/NFDRS4/src/CNFDRSParams.cpp', 'lib/utctime/src/utctime.cpp',]
+# Function to get the appropriate compile flags based on file extension
+def get_compile_flags(file_name):
+    if file_name.endswith('.c'):
+        return ['-std=c11']  # C files should be compiled with C standard
+    elif file_name.endswith('.cpp'):
+        return ['-std=c++11']  # C++ files should be compiled with C++ standard
+    return []
+
 # Define the SWIG extension
+swig_sources = [
+    'nfdrs4py/nfdrs4.i',
+    'lib/NFDRS4/src/deadfuelmoisture.cpp', 'lib/NFDRS4/src/livefuelmoisture.cpp',
+    'lib/NFDRS4/src/dfmcalcstate.cpp', 'lib/NFDRS4/src/lfmcalcstate.cpp',
+    'lib/NFDRS4/src/nfdrs4calcstate.cpp', 'lib/NFDRS4/src/nfdrs4.cpp',
+    'lib/NFDRS4/src/CNFDRSParams.cpp', 'lib/utctime/src/utctime.cpp',
+    'lib/time64/src/time64.c'  # This is the C file causing the issue
+]
+
+# Apply the appropriate compile flags to each source file
+extra_compile_args = []
+for source in swig_sources:
+    extra_compile_args.extend(get_compile_flags(source))
+
+# Define the SWIG extension with proper flags
 swig_extension = Extension(
     name='nfdrs4py._nfdrs4_bindings',  # Name of the Python package
-    sources=c_sources + cpp_sources,
+    sources=swig_sources,
     swig_opts=['-c++'],  # SWIG options
-    language='c++',
-    include_dirs=['lib/NFDRS4/include','lib/time64/include','lib/utctime/include',numpy.get_include()],  # C:/Users/john1/miniforge3/include/
-    extra_compile_args=['-std=c++11'],  # Additional compiler options
+    language='c++',  # The main extension is in C++
+    include_dirs=['lib/NFDRS4/include', 'lib/time64/include', 'lib/utctime/include', numpy.get_include()],
+    extra_compile_args=extra_compile_args,  # Add our conditional compile args here
     extra_link_args=[],  # Additional linker options
 )
-
-class CCustomBuildExt(build_ext):
-    def build_extension(self, ext):
-        c_files = [f for f in ext.sources if f.endswith('.c')]
-        cpp_files = [f for f in ext.sources if f.endswith('.cpp')]
-
-        if c_files:
-            self.compiler.compiler_so[0] = 'gcc'
-            ext.sources = c_files
-            super().build_extension(ext)
-        if cpp_files:
-            self.compiler.compiler_so[0] = 'g++'
-            ext.sources = cpp_files
-            super().build_extension_ext
 
 class BuildPy(build_py):
     def run(self):
         self.run_command('build_ext')
-        super(build_py, self).run()
+        super(BuildPy, self).run()
 
 setup(
     name='nfdrs4py',
@@ -49,5 +54,4 @@ setup(
         'build_py': BuildPy,
     },
     packages=find_packages(),
-    #package_dir={'nfdrs4py': 'nfdrs4py'}
 )
