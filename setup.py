@@ -25,14 +25,19 @@ swig_sources = [
 
 # Apply the appropriate compile flags to each source file
 extra_compile_args = []
+# Loop through all source files and apply compile flags based on file extension
 for source in swig_sources:
-    extra_compile_args.extend(get_compile_flags(source))
+    # Get flags for this file
+    compile_flags = get_compile_flags(source)
+    
+    # Add flags to the global extra_compile_args list
+    extra_compile_args.extend(compile_flags)
 
 # Define the SWIG extension with proper flags
 swig_extension = Extension(
     name='nfdrs4py._nfdrs4_bindings',  # Name of the Python package
     sources=swig_sources,
-    swig_opts=['-c++'],  # SWIG options
+    swig_opts=['-c++'],  # SWIG options to generate C++ bindings
     language='c++',  # The main extension is in C++
     include_dirs=['lib/NFDRS4/include', 'lib/time64/include', 'lib/utctime/include', numpy.get_include()],
     extra_compile_args=extra_compile_args,  # Add our conditional compile args here
