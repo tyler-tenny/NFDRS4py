@@ -16,8 +16,6 @@ jobs:
 
       - name: Use c++11
         run: |
-          echo "CC=g++" >> $GITHUB_ENV
-          echo "CXX=g++" >> $GITHUB_ENV
           echo "CXXFLAGS=-std=c++11" >> $GITHUB_ENV
           
       - name: Build wheels
