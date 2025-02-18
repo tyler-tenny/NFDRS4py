@@ -12,8 +12,7 @@ if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
 
   # Let's ensure -std=c++xx instead of -std=g++xx
   set(CMAKE_CXX_EXTENSIONS OFF)
-  set_property(TARGET ${SWIG_MODULE_elecswig_REAL_NAME} PROPERTY CXX_STANDARD_REQUIRED 11)
-  
+
   # Let's nicely support folders in IDEs
   set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
