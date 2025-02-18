@@ -14,7 +14,7 @@ swig_extension = Extension(
     language='c++',
     include_dirs=['lib/NFDRS4/include','lib/time64/include','lib/utctime/include',numpy.get_include()],  # C:/Users/john1/miniforge3/include/
     extra_compile_args=[],  # Additional compiler options
-    extra_link_args=[-std=c++11],  # Additional linker options
+    extra_link_args=[],  # Additional linker options
 )
 
 class BuildPy(build_py):
